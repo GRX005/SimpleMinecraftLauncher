@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
-//.jar libs in libraries folder, .dlls in natives folder, mc jar next to the launcher., assets in assets folder, assetIndex is
+//.jar libs in libraries folder, .dlls in natives folder, from bin, mc jar next to the launcher., assets in assets folder, assetIndex is the num: assets\indexes\[num].json
 
 public class Main {
     public static void main(String[] args) throws IOException {

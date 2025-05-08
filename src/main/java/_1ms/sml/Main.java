@@ -20,7 +20,7 @@ package _1ms.sml;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
+import java.util.*;
 
 //.jar libs in libraries folder, .dlls in natives folder, from bin, mc jar next to the launcher., assets in assets folder, assetIndex is the num: assets\indexes\[num].json
 
@@ -33,23 +33,43 @@ public class Main {
         String gameDir = currentDir + File.separator + "MC";
         String assetsDir = currentDir + File.separator + "assets";
         String launcherBrand = "SML";
+        String uname = null;
+        try {
+            if(Objects.equals(args[0], "-n"))
+                uname = args[1];
+        } catch (Exception ignored) {
 
-        ProcessBuilder proc= new ProcessBuilder(
+        }
+
+        List<String> baseArgs = new ArrayList<>(Arrays.asList(
                 javaBin,
                 "-Xms1024M",
                 "-Xmx4096M",
                 "-Djava.library.path=" + nativesPath,
                 "-Djna.tmpdir=" + nativesPath,
                 "-Dorg.lwjgl.system.SharedLibraryExtractPath=" + nativesPath,
-                "-Dio.netty.native.workdir="+nativesPath,
+                "-Dio.netty.native.workdir=" + nativesPath,
                 "-cp", classPath,
-                "-Xmx2G", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC", "-XX:G1NewSizePercent=20", "-XX:G1ReservePercent=20", "-XX:MaxGCPauseMillis=50", "-XX:G1HeapRegionSize=32M", //GC
+                "-Xmx2G", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC",
+                "-XX:G1NewSizePercent=20", "-XX:G1ReservePercent=20",
+                "-XX:MaxGCPauseMillis=50", "-XX:G1HeapRegionSize=32M",
                 "-Dminecraft.launcher.brand=" + launcherBrand,
-                "-Dminecraft.launcher.version=" + "1.0",
-                "-XX:HeapDumpPath=" + "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+                "-Dminecraft.launcher.version=1.0",
+                "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
                 "-Xss1M",
-                "net.minecraft.client.main.Main",
-                //"--username", "asd",
+                "net.minecraft.client.main.Main"
+        ));
+
+        // 2) Conditionally insert the username args
+        if (uname != null) {
+            // insert right after the main class name
+            int insertIndex = baseArgs.indexOf("net.minecraft.client.main.Main") + 1;
+            baseArgs.add(insertIndex, uname);
+            baseArgs.add(insertIndex, "--username");
+        }
+
+        // 3) Add the remaining constant suffix
+        baseArgs.addAll(Arrays.asList(
                 "--uuid", UUID.randomUUID().toString(),
                 "--clientId", launcherBrand,
                 "--xuid", launcherBrand,
@@ -59,7 +79,10 @@ public class Main {
                 "--assetsDir", assetsDir,
                 "--assetIndex", "24",
                 "--accessToken", launcherBrand
-        );
+        ));
+
+        // single ProcessBuilder invocation
+        ProcessBuilder proc = new ProcessBuilder(baseArgs);
         proc.inheritIO();
         proc.start();
     }

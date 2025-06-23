@@ -28,18 +28,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
         String currentDir = System.getProperty("user.dir");
         String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-        String classPath = currentDir + File.separator + "libraries" + File.separator + "*" + File.pathSeparator + currentDir + File.separator + "1.21.5.jar";
+        String classPath = currentDir + File.separator + "libraries" + File.separator + "*" + File.pathSeparator + currentDir + File.separator + "mc.jar";
         String nativesPath = currentDir + File.separator + "natives";
         String gameDir = currentDir + File.separator + "MC";
         String assetsDir = currentDir + File.separator + "assets";
         String launcherBrand = "SML";
-        String uname = null;
-        try {
-            if(Objects.equals(args[0], "-n"))
-                uname = args[1];
-        } catch (Exception ignored) {
-
-        }
+        String uname = args[1];
 
         List<String> baseArgs = new ArrayList<>(Arrays.asList(
                 javaBin,

@@ -33,7 +33,7 @@ public class Main {
         String gameDir = currentDir + File.separator + "MC";
         String assetsDir = currentDir + File.separator + "assets";
         String launcherBrand = "SML";
-        String uname = args[1];
+        String uname = args.length>0 ? args[0] : null;
 
         List<String> baseArgs = new ArrayList<>(Arrays.asList(
                 javaBin,
@@ -67,7 +67,7 @@ public class Main {
                 "--uuid", UUID.randomUUID().toString(),
                 "--clientId", launcherBrand,
                 "--xuid", launcherBrand,
-                "--version", "1.21.5",
+                "--version", "1.21.6",
                 "--versionType", launcherBrand,
                 "--gameDir", gameDir,
                 "--assetsDir", assetsDir,

@@ -71,7 +71,7 @@ public class Main {
                 "--versionType", launcherBrand,
                 "--gameDir", gameDir,
                 "--assetsDir", assetsDir,
-                "--assetIndex", "24",
+                "--assetIndex", "26",
                 "--accessToken", launcherBrand
         ));
 

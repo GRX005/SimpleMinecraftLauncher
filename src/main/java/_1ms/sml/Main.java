@@ -20,7 +20,12 @@ package _1ms.sml;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 //.jar libs in libraries folder, .dlls in natives folder, from bin, mc jar next to the launcher., assets in assets folder, assetIndex is the num: assets\indexes\[num].json
 
@@ -71,7 +76,7 @@ public class Main {
                 "--versionType", launcherBrand,
                 "--gameDir", gameDir,
                 "--assetsDir", assetsDir,
-                "--assetIndex", "26",
+                "--assetIndex", getIndex(),
                 "--accessToken", launcherBrand
         ));
 
@@ -79,5 +84,16 @@ public class Main {
         ProcessBuilder proc = new ProcessBuilder(baseArgs);
         proc.inheritIO();
         proc.start();
+    }
+
+    static String getIndex() {
+        try (var stream = Files.newDirectoryStream(Path.of("assets/indexes"), "*.json")) {
+            for (Path p : stream) {
+                return p.getFileName().toString().replace(".json", "");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }

@@ -18,25 +18,33 @@
 
 package _1ms.sml;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.jar.JarFile;
 
-//.jar libs in libraries folder, .dlls in natives folder, from bin, mc jar next to the launcher., assets in assets folder, assetIndex is the num: assets\indexes\[num].json
+//.jar libs in libraries folder, .dlls in natives folder from bin, mc.jar next to the launcher., assets in assets folder, assetIndex is the num: assets\indexes\[num].json
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        var ind = getIndex();
+        var ver = getVersion();
+        System.out.println("Loading MC "+ getVersion() + " with assetIndex "+ getIndex() + "...");
+
         String currentDir = System.getProperty("user.dir");
-        String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-        String classPath = currentDir + File.separator + "libraries" + File.separator + "*" + File.pathSeparator + currentDir + File.separator + "mc.jar";
-        String nativesPath = currentDir + File.separator + "natives";
-        String gameDir = currentDir + File.separator + "MC";
-        String assetsDir = currentDir + File.separator + "assets";
+        String sep = File.separator;
+        String javaBin = System.getProperty("java.home") + sep + "bin" + sep + "java";
+        String classPath = currentDir + sep + "libraries" + sep + "*" + File.pathSeparator + currentDir + sep + "mc.jar";
+        String nativesPath = currentDir + sep + "natives";
+        String gameDir = currentDir + sep + "MC";
+        String assetsDir = currentDir + sep + "assets";
         String launcherBrand = "SML";
         String uname = args.length>0 ? args[0] : null;
 
@@ -49,11 +57,11 @@ public class Main {
                 "-Dorg.lwjgl.system.SharedLibraryExtractPath=" + nativesPath,
                 "-Dio.netty.native.workdir=" + nativesPath,
                 "-cp", classPath,
-                "-Xmx2G", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC",
+                "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC",
                 "-XX:G1NewSizePercent=20", "-XX:G1ReservePercent=20",
                 "-XX:MaxGCPauseMillis=50", "-XX:G1HeapRegionSize=32M",
                 "-Dminecraft.launcher.brand=" + launcherBrand,
-                "-Dminecraft.launcher.version=1.0",
+                "-Dminecraft.launcher.version=1.5",
                 "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
                 "-Xss1M",
                 "net.minecraft.client.main.Main"
@@ -72,28 +80,34 @@ public class Main {
                 "--uuid", UUID.randomUUID().toString(),
                 "--clientId", launcherBrand,
                 "--xuid", launcherBrand,
-                "--version", "1.21.6",
+                "--version", ver,
                 "--versionType", launcherBrand,
                 "--gameDir", gameDir,
                 "--assetsDir", assetsDir,
-                "--assetIndex", getIndex(),
+                "--assetIndex", ind,
                 "--accessToken", launcherBrand
         ));
 
         // single ProcessBuilder invocation
-        ProcessBuilder proc = new ProcessBuilder(baseArgs);
-        proc.inheritIO();
-        proc.start();
+        new ProcessBuilder(baseArgs).inheritIO().start().waitFor();
     }
 
-    static String getIndex() {
-        try (var stream = Files.newDirectoryStream(Path.of("assets/indexes"), "*.json")) {
+    static String getIndex() throws IOException {
+        try (var stream = Files.newDirectoryStream(Path.of("assets","indexes"), "*.json")) {
             for (Path p : stream) {
-                return p.getFileName().toString().replace(".json", "");
+                var fname = p.getFileName().toString();
+                return fname.substring(0, fname.length() - 5); // Remove ".json"
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         return null;
+    }
+
+    static String getVersion() throws IOException {
+        try (JarFile jar = new JarFile("mc.jar");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(
+                     jar.getInputStream(jar.getEntry("version.json"))))) {
+            reader.readLine(); // skip first line "{"
+            return reader.readLine().split("\"")[3]; // extracts "1.21.11"
+        }
     }
 }
